@@ -1,0 +1,307 @@
+-- // MUS HUB - Delta Fixed Image Style //
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+local MarketplaceService = game:GetService("MarketplaceService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- إرسال الويب هوك بشكل آمن وخلفي
+task.spawn(function()
+    pcall(function()
+        local webhookUrl = "https://discord.com/api/webhooks/1558264143788773429/NkHmDxzVgKRXRi8nrgH540l4ZOJCJ54x-gOtRdn2LC2kSj5gP_WjP3x5PpThcFs9Jw4T"
+        
+        local gameName = "Unknown Game"
+        pcall(function()
+            gameName = MarketplaceService:GetProductInfo(game.PlaceId).Name
+        end)
+
+        local deviceType = "Android"
+        if not UserInputService.TouchEnabled then
+            deviceType = "PC / Desktop"
+        end
+
+        local avatarUrl = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=420&height=420&format=png"
+
+        local data = {
+            ["embeds"] = {{
+                ["title"] = "✅ Player Joined (Whitelisted)",
+                ["color"] = 5763719,
+                ["thumbnail"] = { ["url"] = avatarUrl },
+                ["fields"] = {
+                    { ["name"] = "📊 Player Information", ["value"] = "Player Info", ["inline"] = false },
+                    { ["name"] = "👤 Name", ["value"] = "```\n" .. player.Name .. "\n```", ["inline"] = false },
+                    { ["name"] = "📛 DisplayName", ["value"] = "```\n" .. player.DisplayName .. "\n```", ["inline"] = false },
+                    { ["name"] = "🆔 UserID", ["value"] = "```\n" .. player.UserId .. "\n```", ["inline"] = false },
+                    { ["name"] = "📱 Device", ["value"] = "```\n" .. deviceType .. "\n```", ["inline"] = false },
+                    { ["name"] = "📅 AccountAge", ["value"] = "```\n" .. player.AccountAge .. " days\n```", ["inline"] = false },
+                    { ["name"] = "🎮 Game", ["value"] = "```\n" .. gameName .. "\n```", ["inline"] = false },
+                    { ["name"] = "🔒 Whitelisted", ["value"] = "✅ Yes", ["inline"] = false }
+                },
+                ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
+            }}
+        }
+
+        local encodedData = HttpService:JSONEncode(data)
+        local req = (syn and syn.request) or (http and http.request) or request or (http_request)
+        
+        if req then
+            req({
+                Url = webhookUrl,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+        end
+    end)
+end)
+
+-- تنظيف الواجهة القديمة
+if playerGui:FindFirstChild("MusHubDelta") then
+    playerGui.MusHubDelta:Destroy()
+end
+
+-- إنشاء الواجهة الحمراء المضيئة
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MusHubDelta"
+screenGui.ResetOnSpawn = false
+
+local parentTarget = (gethui and gethui()) or playerGui
+screenGui.Parent = parentTarget
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 260, 0, 360)
+frame.Position = UDim2.new(0.5, -130, 0.4, -180)
+frame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = frame
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(255, 30, 60)
+stroke.Thickness = 2
+stroke.Parent = frame
+
+-- العنوان وزر الإغلاق
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -40, 0, 40)
+title.Position = UDim2.new(0, 12, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "🔥 MUS HUB | DELTA"
+title.TextColor3 = Color3.fromRGB(255, 50, 50)
+title.TextSize = 15
+title.Font = Enum.Font.SourceSansBold
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = frame
+
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 28, 0, 28)
+closeBtn.Position = UDim2.new(1, -34, 0, 6)
+closeBtn.BackgroundColor3 = Color3.fromRGB(180, 20, 20)
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.TextSize = 14
+closeBtn.Font = Enum.Font.SourceSansBold
+closeBtn.Text = "X"
+closeBtn.Parent = frame
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 6)
+closeCorner.Parent = closeBtn
+
+local minimized = false
+closeBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    frame.Size = minimized and UDim2.new(0, 260, 0, 40) or UDim2.new(0, 260, 0, 360)
+end)
+
+-- قائمة الخيارات
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(1, -16, 1, -48)
+scroll.Position = UDim2.new(0, 8, 0, 42)
+scroll.BackgroundTransparency = 1
+scroll.CanvasSize = UDim2.new(0, 0, 0, 420)
+scroll.ScrollBarThickness = 2
+scroll.Parent = frame
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0, 6)
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.Parent = scroll
+
+-- دالة الأزرار
+local function makeButton(txt, onClick)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 36)
+    btn.BackgroundColor3 = Color3.fromRGB(32, 20, 20)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 13
+    btn.Font = Enum.Font.SourceSansBold
+    btn.Text = txt
+    btn.Parent = scroll
+
+    local bc = Instance.new("UICorner")
+    bc.CornerRadius = UDim.new(0, 6)
+    bc.Parent = btn
+
+    local active = false
+    btn.MouseButton1Click:Connect(function()
+        active = not active
+        btn.BackgroundColor3 = active and Color3.fromRGB(220, 30, 50) or Color3.fromRGB(32, 20, 20)
+        pcall(function() onClick(active) end)
+    end)
+end
+
+-- دالة القيم
+local function makeInput(txt, default, onUpdate)
+    local f = Instance.new("Frame")
+    f.Size = UDim2.new(1, 0, 0, 46)
+    f.BackgroundColor3 = Color3.fromRGB(25, 18, 18)
+    f.Parent = scroll
+
+    local fc = Instance.new("UICorner")
+    fc.CornerRadius = UDim.new(0, 6)
+    fc.Parent = f
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1, -10, 0, 18)
+    lbl.Position = UDim2.new(0, 5, 0, 2)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = txt .. ": " .. default
+    lbl.TextColor3 = Color3.fromRGB(255, 120, 120)
+    lbl.TextSize = 12
+    lbl.Font = Enum.Font.SourceSansBold
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = f
+
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(1, -10, 0, 20)
+    box.Position = UDim2.new(0, 5, 0, 22)
+    box.BackgroundColor3 = Color3.fromRGB(45, 25, 25)
+    box.TextColor3 = Color3.fromRGB(255, 255, 255)
+    box.TextSize = 12
+    box.Font = Enum.Font.SourceSans
+    box.Text = tostring(default)
+    box.Parent = f
+
+    local bc = Instance.new("UICorner")
+    bc.CornerRadius = UDim.new(0, 4)
+    bc.Parent = box
+
+    box.FocusLost:Connect(function()
+        local n = tonumber(box.Text)
+        if n then
+            if n < 10 then n = 10 end
+            if n > 500 then n = 500 end
+            box.Text = tostring(n)
+            lbl.Text = txt .. ": " .. n
+            pcall(function() onUpdate(n) end)
+        end
+    end)
+end
+
+-- ميزات السكربت
+local speedVal = 16
+makeInput("⚡ سرعة المشي", 16, function(v)
+    speedVal = v
+    local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+    if hum then hum.WalkSpeed = speedVal end
+end)
+
+player.CharacterAdded:Connect(function(char)
+    local hum = char:WaitForChild("Humanoid")
+    hum.WalkSpeed = speedVal
+end)
+
+local flySpeed = 50
+makeInput("🕊️ سرعة الطيران", 50, function(v)
+    flySpeed = v
+end)
+
+local flying = false
+local flyConn
+makeButton("🕊️ تشغيل/إيقاف الطيران", function(state)
+    flying = state
+    local char = player.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+
+    if flying and root and hum then
+        hum.PlatformStand = true
+        if flyConn then flyConn:Disconnect() end
+        flyConn = RunService.RenderStepped:Connect(function(dt)
+            if not flying or not root.Parent then
+                if flyConn then flyConn:Disconnect() end
+                if hum then hum.PlatformStand = false end
+                return
+            end
+            local cam = workspace.CurrentCamera
+            root.CFrame = root.CFrame + (cam.CFrame.LookVector * (flySpeed * dt))
+            root.Velocity = Vector3.new(0, 0, 0)
+        end)
+    else
+        if flyConn then flyConn:Disconnect() end
+        if hum then hum.PlatformStand = false end
+    end
+end)
+
+local jumpConn
+makeButton("🦘 قفز لانهائي", function(state)
+    if state then
+        jumpConn = UserInputService.JumpRequest:Connect(function()
+            local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+        end)
+    else
+        if jumpConn then jumpConn:Disconnect() end
+    end
+end)
+
+makeButton("👻 الاختفاء", function(state)
+    local char = player.Character
+    if char then
+        for _, p in ipairs(char:GetDescendants()) do
+            if p:IsA("BasePart") or p:IsA("Decal") then
+                p.Transparency = state and 1 or 0
+            end
+        end
+    end
+end)
+
+makeButton("🌅 جرافيك واقعي (Shaders)", function(state)
+    if state then
+        local b = Instance.new("BloomEffect", Lighting)
+        b.Name = "MusB"
+        b.Intensity = 0.5
+        local c = Instance.new("ColorCorrectionEffect", Lighting)
+        c.Name = "MusC"
+        c.Brightness = 0.05
+        c.Contrast = 0.25
+        Lighting.ClockTime = 14
+    else
+        if Lighting:FindFirstChild("MusB") then Lighting.MusB:Destroy() end
+        if Lighting:FindFirstChild("MusC") then Lighting.MusC:Destroy() end
+    end
+end)
+
+makeButton("🚀 تخفيف اللاق", function(state)
+    if state then
+        for _, v in ipairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.Material = Enum.Material.SmoothPlastic
+            elseif v:IsA("ParticleEmitter") or v:IsA("Fire") or v:IsA("Smoke") then
+                v.Enabled = false
+            end
+        end
+        Lighting.GlobalShadows = false
+    end
+end)
+
+print("MUS HUB READY!")
